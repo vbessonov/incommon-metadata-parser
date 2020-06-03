@@ -1,0 +1,34 @@
+version: "3.4"
+
+x-incommon-metadata-parser: &x-incommon-metadata-parser
+  restart: "no"
+  build: ./
+  image: incommon-metadata-parser
+  depends_on:
+    - mongo
+
+services:
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: root
+
+  metadata-import:
+    <<: *x-incommon-metadata-parser
+    command: ["import-metadata", "--host", "mongo", "--user", "root", "--password", "root"]
+
+volumes:
+  mongodb-data:
